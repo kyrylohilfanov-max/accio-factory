@@ -91,6 +91,16 @@
 </div>
 </section>
 
+<section id="popular" class="wrap sec sec--tight">
+<div class="sec__head">
+<div>
+<h2>Чаще всего берут <span class="gradtext">отдельно</span></h2>
+<p class="sub">Три услуги, которые заказывают сами по себе, без всего завода. Возьмите одну — остальное можно добавить позже.</p>
+</div>
+</div>
+<div id="popular-grid" class="grid grid--3 mt32"></div>
+</section>
+
 <section class="wrap sec sec--two">
 <div>
 <h2>Кому подходит <span class="gradtext">контент-завод</span></h2>
@@ -329,28 +339,31 @@
 <section id="form" class="wrap sec">
 <div class="cta dark">
 <div>
-<h2>Рассчитаем контент-завод под задачи вашего бренда</h2>
-<div id="form-summary" class="summary"></div>
-<div class="grid grid--3 mt28 cta__steps">
-<div><small>01</small><b>Заявка</b><span>Всего пара полей</span></div>
-<div><small>02</small><b>Аудит</b><span>Продукт, соцсети, задача</span></div>
-<div><small>03</small><b>Прогноз</b><span>Видеозвонок, показ кабинетов</span></div>
-</div>
-<p class="cta__tg">Или напишите в Telegram: <a href="https://t.me/accio_pro_bot">@accio_pro_bot</a></p>
+<p class="pill"><span class="dot"></span>Ваша корзина</p>
+<h2>Соберите заявку — <span class="gradtext">и отправьте нам в Telegram</span></h2>
+<div id="cart-list" class="cart"></div>
+<p class="cta__tg">Отвечаем в рабочее время в течение 2 часов. Пришлём прогноз и расчёт за 1 день.</p>
 </div>
 <form id="lead-form" class="card form" novalidate>
-<label>Имя<input type="text" name="name" placeholder="Как к вам обращаться" required></label>
-<label>Telegram или телефон<input type="text" name="contact" placeholder="@username" required></label>
-<label>Ниша<select name="niche">
+<b class="form__title">Отправка — 10 секунд</b>
+<p class="form__hint">Нажмите кнопку — откроется Telegram с готовым сообщением, где уже перечислено всё, что вы выбрали. Останется только нажать «Отправить». Ваш Telegram мы увидим сами.</p>
+<label>Ниша <small>(необязательно)</small><select name="niche">
+<option value="">— не выбрана —</option>
 <option>Недвижимость</option><option>Товарные бренды и маркетплейсы</option><option>Бьюти и косметика</option><option>Онлайн-школы и эксперты</option><option>Приложения и SaaS</option><option>Интернет-магазины и сервисы</option><option>Другое</option>
 </select></label>
-<label>Сайт бренда или продукта<input type="url" name="site" placeholder="https://"></label>
-<button type="submit" class="btn btn--grad btn--lg btn--block" id="submit-btn">Получить расчёт и прогноз</button>
-<p class="hint">Нажимая кнопку, вы соглашаетесь с политикой обработки персональных данных.</p>
+<label>Сайт или продукт <small>(необязательно)</small><input type="url" name="site" placeholder="https://"></label>
+<a id="tg-send" class="btn btn--grad btn--lg btn--block" href="#" target="_blank" rel="noopener">Отправить в Telegram →</a>
+<button type="button" class="btn btn--line btn--block" data-action="copy">Скопировать заявку текстом</button>
 <div id="form-done" class="form__done" hidden></div>
+<p class="hint">Нажимая кнопку, вы соглашаетесь с политикой обработки персональных данных.</p>
 </form>
 </div>
 </section>
+
+<div id="cartbar" class="cartbar" hidden>
+<span id="cartbar-text"></span>
+<a href="#form" class="btn btn--grad">Оформить →</a>
+</div>
 
 <footer class="ftr">
 <div class="wrap ftr__in">

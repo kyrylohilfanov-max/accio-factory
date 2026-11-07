@@ -8,8 +8,15 @@
     creatorRate: 0,    // оплата одного креатора, ₽/мес
     videosPerCreator: 60,
     viewsPerPost: 800,
-    telegram: 'https://t.me/accio_pro_bot'
+    telegramUser: 'aloha699'   // куда уходят заявки: t.me/<username> с готовым текстом
   };
+
+  /* Услуги, которые чаще всего берут отдельно — показываются сразу после первого экрана */
+  var POPULAR = [
+    { id: 'threads', title: 'Автоматизация Threads', desc: 'Посты, цепочки, комментарии и лайки от лица бренда на автомате. Отдельный бесплатный канал охвата.', tag: 'Хит', extra: ['engage'] },
+    { id: 'funnelbot', title: 'Бот-воронка в Telegram', desc: 'Бот прогревает, отвечает на вопросы и доводит до заявки или оплаты. Работает 24/7 без менеджера.', tag: 'Хит', extra: [] },
+    { id: 'tggroup', title: 'Ведение Telegram-группы', desc: 'Модерация, приветствия, автоответы, рубрики и активность — группа живёт сама.', tag: 'Хит', extra: ['tgchannel'] }
+  ];
 
   var PIPELINE = [
     { num: '01', title: 'Бриф', desc: 'Цель, продукт, аудитория' },
@@ -167,72 +174,103 @@
     }).join('');
   }
 
-  /* ---------- summary / form ---------- */
+  /* ---------- popular (отдельные услуги) ---------- */
+  function itemById(id) { return allItems().filter(function (it) { return it.id === id; })[0]; }
+  function renderPopular() {
+    $('#popular-grid').innerHTML = POPULAR.map(function (p) {
+      var on = !!state.picked[p.id];
+      return '<div class="card pop' + (on ? ' pop--on' : '') + '"><div class="pop__head"><span class="pop__tag">' + esc(p.tag) + '</span>' + (on ? '<span class="pop__in">В корзине ✓</span>' : '') + '</div>' +
+        '<h3>' + esc(p.title) + '</h3><p>' + esc(p.desc) + '</p>' +
+        '<button type="button" class="btn ' + (on ? 'btn--outline' : 'btn--grad') + '" data-popular="' + p.id + '">' + (on ? 'Убрать из корзины' : 'В корзину') + '</button></div>';
+    }).join('');
+  }
+
+  /* ---------- cart ---------- */
   function pickedTitles() { return allItems().filter(function (it) { return state.picked[it.id]; }).map(function (it) { return it.title; }); }
+  function pickedIds() { return allItems().filter(function (it) { return state.picked[it.id]; }).map(function (it) { return it.id; }); }
   function tariffName() { var t = TARIFFS.filter(function (x) { return x.id === state.tariff; })[0]; return t ? t.name : ''; }
-  function renderSummary() {
-    var titles = pickedTitles();
+  function cartCount() { return pickedIds().length + (state.tariff ? 1 : 0) + (state.calcApplied ? 1 : 0); }
+  function plural(n, a, b, c) { var m = n % 100; if (m >= 11 && m <= 19) return c; m = n % 10; return m === 1 ? a : (m >= 2 && m <= 4 ? b : c); }
+
+  function renderCart() {
+    var ids = pickedIds();
     var c = calcValues();
     var html = '';
-    if (state.tariff) html += '<p class="line"><span>Тариф:</span> <b>' + esc(tariffName()) + '</b></p>';
-    if (state.calcApplied) html += '<p class="line">Расчёт: ' + state.creators + ' креаторов · ' + state.platforms + ' площадок · ' + num(c.videos) + ' роликов · ' + num(c.publications) + ' публикаций · охват ≈ ' + num(c.reach) + '</p>';
-    if (titles.length) html += '<p>Модули — ' + titles.length + ' из ' + allItems().length + ':</p><div class="tags">' + titles.map(function (t) { return '<span>' + esc(t) + '</span>'; }).join('') + '</div>';
-    if (!html) html = '<p>Определим количество креаторов, объём публикаций, состав команды и полный бюджет запуска. Отметьте модули в конструкторе — или просто оставьте заявку.</p>';
-    $('#form-summary').innerHTML = html;
-    $('#submit-btn').textContent = titles.length ? 'Получить расчёт · ' + titles.length + ' мод.' : 'Получить расчёт и прогноз';
+    if (state.tariff) html += '<div class="cart__item cart__item--hl"><span><small>Тариф</small><b>' + esc(tariffName()) + '</b></span><button type="button" data-remove="tariff" aria-label="Убрать тариф">×</button></div>';
+    if (state.calcApplied) html += '<div class="cart__item cart__item--hl"><span><small>Расчёт объёма</small><b>' + state.creators + ' креаторов · ' + state.platforms + ' площадок · ' + num(c.videos) + ' роликов · ' + num(c.publications) + ' публикаций · охват ≈ ' + num(c.reach) + '</b></span><button type="button" data-remove="calc" aria-label="Убрать расчёт">×</button></div>';
+    html += ids.map(function (id) { var it = itemById(id); return '<div class="cart__item"><span><b>' + esc(it.title) + '</b></span><button type="button" data-remove="' + id + '" aria-label="Убрать">×</button></div>'; }).join('');
+    if (!html) {
+      html = '<div class="cart__empty"><p>Корзина пока пуста. Выберите услуги в разделе <a href="#popular">«Чаще всего берут отдельно»</a> или соберите завод в <a href="#builder">конструкторе</a>.</p><p>Можно и без выбора — просто напишите нам, что хотите, и мы подберём набор сами.</p></div>';
+    } else {
+      html = '<div class="cart__count">' + ids.length + ' ' + plural(ids.length, 'модуль', 'модуля', 'модулей') + (state.tariff ? ' · тариф' : '') + (state.calcApplied ? ' · расчёт' : '') + '</div>' + html;
+    }
+    $('#cart-list').innerHTML = html;
+    var n = cartCount();
+    var bar = $('#cartbar');
+    bar.hidden = n === 0;
+    $('#cartbar-text').textContent = 'В корзине: ' + ids.length + ' ' + plural(ids.length, 'модуль', 'модуля', 'модулей') + (state.tariff ? ' + тариф «' + tariffName() + '»' : '');
+    updateTgLink();
   }
 
-  function composeLead(form) {
-    var fd = new FormData(form);
+  function composeLead() {
+    var form = $('#lead-form');
     var c = calcValues();
-    var lines = ['Заявка на контент-завод Accio',
-      'Имя: ' + (fd.get('name') || '—'),
-      'Контакт: ' + (fd.get('contact') || '—'),
-      'Ниша: ' + (fd.get('niche') || '—'),
-      'Сайт: ' + (fd.get('site') || '—')];
-    if (state.tariff) lines.push('Тариф: ' + tariffName());
-    if (state.calcApplied) lines.push('Расчёт: ' + state.creators + ' креаторов, ' + state.platforms + ' площадок, уникализатор ×' + state.uniq + ' → ' + num(c.videos) + ' роликов, ' + num(c.publications) + ' публикаций, охват ≈ ' + num(c.reach));
+    var lines = ['Здравствуйте! Хочу контент-завод Accio.'];
     var titles = pickedTitles();
+    if (state.tariff) lines.push('Тариф: ' + tariffName());
     if (titles.length) lines.push('Модули (' + titles.length + '): ' + titles.join(', '));
+    if (state.calcApplied) lines.push('Объём: ' + state.creators + ' креаторов, ' + state.platforms + ' площадок, уникализатор ×' + state.uniq + ' → ' + num(c.videos) + ' роликов, ' + num(c.publications) + ' публикаций/мес, охват ≈ ' + num(c.reach));
+    if (!titles.length && !state.tariff && !state.calcApplied) lines.push('Пока не выбрал модули — помогите подобрать.');
+    if (form.niche.value) lines.push('Ниша: ' + form.niche.value);
+    if (form.site.value.trim()) lines.push('Сайт: ' + form.site.value.trim());
     return lines.join('\n');
   }
+  function updateTgLink() {
+    $('#tg-send').href = 'https://t.me/' + CONFIG.telegramUser + '?text=' + encodeURIComponent(composeLead());
+  }
 
-  function renderAll() { renderBuilder(); renderCalc(); renderTariffs(); renderSummary(); }
+  function renderAll() { renderPopular(); renderBuilder(); renderCalc(); renderTariffs(); renderCart(); }
 
   /* ---------- events ---------- */
   document.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-mod],[data-toggle-group],[data-set],[data-tariff],[data-action]');
+    var t = e.target.closest('[data-mod],[data-toggle-group],[data-set],[data-tariff],[data-action],[data-popular],[data-remove]');
     if (!t) return;
-    if (t.dataset.mod) { state.picked[t.dataset.mod] = !state.picked[t.dataset.mod]; renderBuilder(); renderSummary(); return; }
+    if (t.dataset.mod) { state.picked[t.dataset.mod] = !state.picked[t.dataset.mod]; renderPopular(); renderBuilder(); renderCart(); return; }
+    if (t.dataset.popular) {
+      var p = POPULAR.filter(function (x) { return x.id === t.dataset.popular; })[0];
+      var on = !!state.picked[p.id];
+      state.picked[p.id] = !on;
+      p.extra.forEach(function (id) { if (!on) state.picked[id] = true; });
+      renderPopular(); renderBuilder(); renderCart(); return;
+    }
+    if (t.dataset.remove) {
+      if (t.dataset.remove === 'tariff') state.tariff = null;
+      else if (t.dataset.remove === 'calc') state.calcApplied = false;
+      else state.picked[t.dataset.remove] = false;
+      renderAll(); return;
+    }
     if (t.dataset.toggleGroup) {
       var g = GROUPS.filter(function (x) { return x.num === t.dataset.toggleGroup; })[0];
       var allOn = g.items.every(function (it) { return state.picked[it.id]; });
       g.items.forEach(function (it) { state.picked[it.id] = !allOn; });
-      renderBuilder(); renderSummary(); return;
+      renderPopular(); renderBuilder(); renderCart(); return;
     }
-    if (t.dataset.set) { state[t.dataset.set] = Number(t.dataset.val); renderCalc(); renderSummary(); return; }
-    if (t.dataset.tariff) { state.tariff = state.tariff === t.dataset.tariff ? null : t.dataset.tariff; renderTariffs(); renderSummary(); return; }
-    if (t.dataset.action === 'select-all') { allItems().forEach(function (it) { state.picked[it.id] = true; }); renderBuilder(); renderSummary(); }
-    if (t.dataset.action === 'clear-all') { state.picked = {}; renderBuilder(); renderSummary(); }
-    if (t.dataset.action === 'apply-calc') { state.calcApplied = true; renderSummary(); }
+    if (t.dataset.set) { state[t.dataset.set] = Number(t.dataset.val); renderCalc(); renderCart(); return; }
+    if (t.dataset.tariff) { state.tariff = state.tariff === t.dataset.tariff ? null : t.dataset.tariff; renderTariffs(); renderCart(); return; }
+    if (t.dataset.action === 'select-all') { allItems().forEach(function (it) { state.picked[it.id] = true; }); renderPopular(); renderBuilder(); renderCart(); }
+    if (t.dataset.action === 'clear-all') { state.picked = {}; renderPopular(); renderBuilder(); renderCart(); }
+    if (t.dataset.action === 'apply-calc') { state.calcApplied = true; renderCart(); }
+    if (t.dataset.action === 'copy') {
+      var text = composeLead();
+      var done = $('#form-done');
+      var show = function (copied) { done.hidden = false; done.innerHTML = (copied ? 'Скопировано. ' : '') + 'Отправьте текст нам в Telegram: <a href="https://t.me/' + CONFIG.telegramUser + '" target="_blank" rel="noopener">@' + CONFIG.telegramUser + '</a><pre>' + esc(text) + '</pre>'; };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { show(true); }, function () { show(false); });
+      else show(false);
+    }
   });
-
-  $('#lead-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    var form = e.target;
-    if (!form.name.value.trim() || !form.contact.value.trim()) { form.name.focus(); return; }
-    var text = composeLead(form);
-    var done = $('#form-done');
-    // Бэкенд не подключён: конфигурация копируется в буфер, клиент отправляет её в Telegram.
-    var show = function (copied) {
-      done.hidden = false;
-      done.innerHTML = (copied ? 'Конфигурация скопирована. ' : '') + 'Отправьте её нам в Telegram: <a href="' + CONFIG.telegram + '" target="_blank" rel="noopener">@accio_pro_bot</a><pre>' + esc(text) + '</pre>';
-      done.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(function () { show(true); }, function () { show(false); });
-    } else { show(false); }
-  });
+  $('#lead-form').addEventListener('change', updateTgLink);
+  $('#lead-form').addEventListener('input', updateTgLink);
+  $('#lead-form').addEventListener('submit', function (e) { e.preventDefault(); });
 
   renderPipeline();
   renderAll();
