@@ -8,8 +8,24 @@
     creatorRate: 0,    // оплата одного креатора, ₽/мес
     videosPerCreator: 60,
     viewsPerPost: 800,
-    telegramUser: 'aloha699'   // куда уходят заявки: t.me/<username> с готовым текстом
+    telegramUser: 'aloha699',  // куда уходят заявки: t.me/<username> с готовым текстом
+    ratingUrl: '',             // ссылка на систему баллов/оценок исполнителей (пусто = без ссылки)
+    // Цены по уровням, ₽/мес: { ugc: { s: 0, m: 0, l: 0 }, ... }. 0 = «Цена — по брифу».
+    // Сумма в корзине появится, когда у всех выбранных услуг с уровнями цены заполнены.
+    tierPrices: {}
   };
+
+  /* Услуги «ручной» работы: клиент выбирает уровень цены (эконом / стандарт / премиум) */
+  var TIER_LABELS = { s: 'Эконом', m: 'Стандарт', l: 'Премиум' };
+  var TIER_INFO = {
+    ugc: { pick: 'авторов', s: 'Начинающие и растущие авторы: небольшая аудитория, быстрый старт и мягкий бюджет.', m: 'Опытные авторы со стабильным охватом и уверенным качеством роликов.', l: 'Топовые UGC-авторы с сильной аудиторией и подтверждёнными результатами.' },
+    influencers: { pick: 'блогеров', s: 'Микроблогеры с живой, вовлечённой аудиторией.', m: 'Средние блогеры с хорошим охватом в вашей нише.', l: 'Крупные блогеры и лидеры мнений для громких запусков.' },
+    premium: { pick: 'продакшн', s: 'Компактная съёмка: небольшая команда и базовый свет.', m: 'Съёмочная группа с оператором, светом и цветокоррекцией.', l: 'Полноценный продакшн: режиссёр, команда, постпродакшн.' },
+    photo: { pick: 'фотографов', s: 'Начинающие фотографы: простые предметные и лайфстайл-съёмки.', m: 'Опытные фотографы с портфолио в вашей категории.', l: 'Топовые фотографы и студии для имиджевых кампаний.' },
+    bloggers: { pick: 'блогеров для рекламы', s: 'Небольшие блоги: выгодные размещения, много точечных охватов.', m: 'Блоги со средней аудиторией и проверенной конверсией.', l: 'Крупные блоги: максимум охвата за одно размещение.' },
+    seeding: { pick: 'каналы', s: 'Небольшие тематические каналы: дешёвый и точный охват.', m: 'Каналы среднего размера и микс из разных площадок.', l: 'Крупные каналы и медиа с большой аудиторией.' }
+  };
+
 
   /* Услуги, которые чаще всего берут отдельно — показываются сразу после первого экрана */
   var POPULAR = [
@@ -101,7 +117,7 @@
       features: ['Всё из «Роста»', '10–20 креаторов, инфлюенсеры, премиум-продакшн', 'Telegram-бот воронка и AI-менеджер', 'Парсинг и инвайтинг в Telegram', 'Ведение Telegram-канала и группы', 'Персональный продюсер, связь 24/7'] }
   ];
 
-  var state = { picked: {}, tariff: null, creators: 5, platforms: 4, uniq: 1, calcApplied: false };
+  var state = { picked: {}, tier: {}, openInfo: null, tariff: null, creators: 5, platforms: 4, uniq: 1, calcApplied: false };
 
   function $(sel, root) { return (root || document).querySelector(sel); }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -118,6 +134,14 @@
   }
 
   /* ---------- builder ---------- */
+  function infoPanel(it) {
+    var d = TIER_INFO[it.id];
+    return '<div class="info" role="note"><b>Как мы подбираем ' + esc(d.pick) + '</b>' +
+      '<p>Отбираем по охвату и числу подписчиков, занятости и срокам, качеству прошлых работ и оценке заказчиков. Это наша забота — вам нужно только выбрать уровень.</p>' +
+      '<ul><li><span>₽</span><div><b>Эконом.</b> ' + esc(d.s) + '</div></li><li><span>₽₽</span><div><b>Стандарт.</b> ' + esc(d.m) + '</div></li><li><span>₽₽₽</span><div><b>Премиум.</b> ' + esc(d.l) + '</div></li></ul>' +
+      '<p>Исполнителей оценивают по баллам, поэтому мы предлагаем проверенных' + (CONFIG.ratingUrl ? ' · <a href="' + esc(CONFIG.ratingUrl) + '" target="_blank" rel="noopener">как устроены оценки</a>' : '') + '. Заказ берём в работу в ближайшее время.</p></div>';
+  }
+
   function renderBuilder() {
     var root = $('#builder-groups');
     root.innerHTML = GROUPS.map(function (g) {
@@ -128,7 +152,15 @@
         '<div class="group__ctl"><span>Выбрано ' + count + ' из ' + g.items.length + '</span><button type="button" data-toggle-group="' + g.num + '">' + (allOn ? 'Снять все' : 'Выбрать весь цех') + '</button></div></div>' +
         '<div class="mods">' + g.items.map(function (it) {
           var on = !!state.picked[it.id];
-          return '<button type="button" class="mod" data-mod="' + it.id + '" aria-pressed="' + on + '"><span class="mod__box">' + CHECK + '</span><span class="mod__body"><span class="mod__title">' + esc(it.title) + (it.soon ? '<span class="mod__soon">скоро</span>' : '') + '</span><span class="mod__desc">' + esc(it.desc) + '</span></span></button>';
+          var btn = '<button type="button" class="mod" data-mod="' + it.id + '" aria-pressed="' + on + '"><span class="mod__box">' + CHECK + '</span><span class="mod__body"><span class="mod__title">' + esc(it.title) + (it.soon ? '<span class="mod__soon">скоро</span>' : '') + '</span><span class="mod__desc">' + esc(it.desc) + '</span></span></button>';
+          if (!TIER_INFO[it.id]) return '<div class="modwrap">' + btn + '</div>';
+          var cur = state.tier[it.id];
+          var bar = '<div class="tierbar" role="group" aria-label="Уровень цены: ' + esc(it.title) + '">' +
+            ['s', 'm', 'l'].map(function (k, i) {
+              return '<button type="button" class="tier" data-tier="' + it.id + ':' + k + '" aria-pressed="' + (cur === k) + '" aria-label="' + TIER_LABELS[k] + '" title="' + TIER_LABELS[k] + '">' + new Array(i + 2).join('₽') + '</button>';
+            }).join('') +
+            '<button type="button" class="tier tier--i" data-info="' + it.id + '" aria-expanded="' + (state.openInfo === it.id) + '" aria-label="Как мы подбираем исполнителей" title="Как мы подбираем">i</button></div>';
+          return '<div class="modwrap modwrap--tier' + (state.openInfo === it.id ? ' is-open' : '') + '">' + btn + bar + (state.openInfo === it.id ? infoPanel(it) : '') + '</div>';
         }).join('') + '</div></div>';
     }).join('');
   }
@@ -192,18 +224,31 @@
   function cartCount() { return pickedIds().length + (state.tariff ? 1 : 0) + (state.calcApplied ? 1 : 0); }
   function plural(n, a, b, c) { var m = n % 100; if (m >= 11 && m <= 19) return c; m = n % 10; return m === 1 ? a : (m >= 2 && m <= 4 ? b : c); }
 
+  function tierTotal() {
+    var r = { items: 0, known: true, sum: 0 };
+    pickedIds().forEach(function (id) {
+      if (!TIER_INFO[id]) return;
+      r.items++;
+      var t = state.tier[id], p = t && CONFIG.tierPrices[id] ? Number(CONFIG.tierPrices[id][t]) : 0;
+      if (p > 0) r.sum += p; else r.known = false;
+    });
+    return r;
+  }
+
   function renderCart() {
     var ids = pickedIds();
     var c = calcValues();
     var html = '';
     if (state.tariff) html += '<div class="cart__item cart__item--hl"><span><small>Тариф</small><b>' + esc(tariffName()) + '</b></span><button type="button" data-remove="tariff" aria-label="Убрать тариф">×</button></div>';
     if (state.calcApplied) html += '<div class="cart__item cart__item--hl"><span><small>Расчёт объёма</small><b>' + state.creators + ' креаторов · ' + state.platforms + ' площадок · ' + num(c.videos) + ' роликов · ' + num(c.publications) + ' публикаций · охват ≈ ' + num(c.reach) + '</b></span><button type="button" data-remove="calc" aria-label="Убрать расчёт">×</button></div>';
-    html += ids.map(function (id) { var it = itemById(id); return '<div class="cart__item"><span><b>' + esc(it.title) + '</b></span><button type="button" data-remove="' + id + '" aria-label="Убрать">×</button></div>'; }).join('');
+    html += ids.map(function (id) { var it = itemById(id); var tl = state.tier[id] && TIER_INFO[id] ? '<small>Уровень: ' + TIER_LABELS[state.tier[id]] + '</small>' : ''; return '<div class="cart__item"><span><b>' + esc(it.title) + '</b>' + tl + '</span><button type="button" data-remove="' + id + '" aria-label="Убрать">×</button></div>'; }).join('');
     if (!html) {
       html = '<div class="cart__empty"><p>Корзина пока пуста. Выберите услуги в разделе <a href="#popular">«Чаще всего берут отдельно»</a> или соберите завод в <a href="#builder">конструкторе</a>.</p><p>Можно и без выбора — просто напишите нам, что хотите, и мы подберём набор сами.</p></div>';
     } else {
       html = '<div class="cart__count">' + ids.length + ' ' + plural(ids.length, 'модуль', 'модуля', 'модулей') + (state.tariff ? ' · тариф' : '') + (state.calcApplied ? ' · расчёт' : '') + '</div>' + html;
     }
+    var tt = tierTotal();
+    if (tt.items) html += '<div class="cart__item cart__item--hl"><span><small>Ориентир по выбранным уровням</small><b>' + (tt.known ? 'от ' + num(tt.sum) + ' ₽/мес' : 'Цена — по брифу') + '</b></span></div>';
     $('#cart-list').innerHTML = html;
     var n = cartCount();
     var bar = $('#cartbar');
@@ -216,7 +261,7 @@
     var form = $('#lead-form');
     var c = calcValues();
     var lines = ['Здравствуйте! Хочу контент-завод Accio.'];
-    var titles = pickedTitles();
+    var titles = allItems().filter(function (it) { return state.picked[it.id]; }).map(function (it) { return it.title + (TIER_INFO[it.id] && state.tier[it.id] ? ' (' + TIER_LABELS[state.tier[it.id]].toLowerCase() + ')' : ''); });
     if (state.tariff) lines.push('Тариф: ' + tariffName());
     if (titles.length) lines.push('Модули (' + titles.length + '): ' + titles.join(', '));
     if (state.calcApplied) lines.push('Объём: ' + state.creators + ' креаторов, ' + state.platforms + ' площадок, уникализатор ×' + state.uniq + ' → ' + num(c.videos) + ' роликов, ' + num(c.publications) + ' публикаций/мес, охват ≈ ' + num(c.reach));
@@ -233,8 +278,16 @@
 
   /* ---------- events ---------- */
   document.addEventListener('click', function (e) {
-    var t = e.target.closest('[data-mod],[data-toggle-group],[data-set],[data-tariff],[data-action],[data-popular],[data-remove]');
+    if (state.openInfo && !e.target.closest('.info') && !e.target.closest('[data-info]')) { state.openInfo = null; renderBuilder(); }
+    var t = e.target.closest('[data-tier],[data-info],[data-mod],[data-toggle-group],[data-set],[data-tariff],[data-action],[data-popular],[data-remove]');
     if (!t) return;
+    if (t.dataset.tier) {
+      var tp = t.dataset.tier.split(':');
+      state.picked[tp[0]] = true;
+      state.tier[tp[0]] = state.tier[tp[0]] === tp[1] ? null : tp[1];
+      renderPopular(); renderBuilder(); renderCart(); return;
+    }
+    if (t.dataset.info) { state.openInfo = state.openInfo === t.dataset.info ? null : t.dataset.info; renderBuilder(); return; }
     if (t.dataset.mod) { state.picked[t.dataset.mod] = !state.picked[t.dataset.mod]; renderPopular(); renderBuilder(); renderCart(); return; }
     if (t.dataset.popular) {
       var p = POPULAR.filter(function (x) { return x.id === t.dataset.popular; })[0];
@@ -246,7 +299,7 @@
     if (t.dataset.remove) {
       if (t.dataset.remove === 'tariff') state.tariff = null;
       else if (t.dataset.remove === 'calc') state.calcApplied = false;
-      else state.picked[t.dataset.remove] = false;
+      else { state.picked[t.dataset.remove] = false; state.tier[t.dataset.remove] = null; }
       renderAll(); return;
     }
     if (t.dataset.toggleGroup) {
@@ -258,7 +311,7 @@
     if (t.dataset.set) { state[t.dataset.set] = Number(t.dataset.val); renderCalc(); renderCart(); return; }
     if (t.dataset.tariff) { state.tariff = state.tariff === t.dataset.tariff ? null : t.dataset.tariff; renderTariffs(); renderCart(); return; }
     if (t.dataset.action === 'select-all') { allItems().forEach(function (it) { state.picked[it.id] = true; }); renderPopular(); renderBuilder(); renderCart(); }
-    if (t.dataset.action === 'clear-all') { state.picked = {}; renderPopular(); renderBuilder(); renderCart(); }
+    if (t.dataset.action === 'clear-all') { state.picked = {}; state.tier = {}; state.openInfo = null; renderPopular(); renderBuilder(); renderCart(); }
     if (t.dataset.action === 'apply-calc') { state.calcApplied = true; renderCart(); }
     if (t.dataset.action === 'copy') {
       var text = composeLead();

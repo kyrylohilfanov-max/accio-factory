@@ -350,3 +350,20 @@ tbody .td--us{background:#F3F2FF;color:var(--ink);font-weight:600}
   .cartbar{left:16px;right:16px;transform:none;justify-content:space-between;font-size:14px}
   .cartbar span{overflow:hidden;text-overflow:ellipsis}
 }
+
+/* Уровни цены (S/M/L) и справка «i» у услуг ручной работы */
+.modwrap{position:relative;display:flex;flex-direction:column;min-width:0}
+.modwrap--tier .mod{flex:1;padding-bottom:74px}
+.modwrap--tier.is-open{z-index:7}
+.tierbar{position:absolute;bottom:14px;right:14px;display:flex;align-items:center;gap:4px}
+.tier{min-width:44px;height:44px;padding:0 6px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--muted);font:inherit;font-size:12px;font-weight:700;letter-spacing:-.04em;cursor:pointer}
+.tier:hover{border-color:#C7CBDA}
+.tier[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.tier--i{font-family:Georgia,serif;font-style:italic;font-size:16px;letter-spacing:0;color:var(--v)}
+.tier--i[aria-expanded="true"]{background:var(--v);border-color:var(--v);color:#fff}
+.info{position:absolute;top:calc(100% + 6px);left:0;right:0;min-width:min(320px,calc(100vw - 32px));z-index:8;padding:16px 18px;border-radius:14px;background:#fff;border:1.5px solid var(--v);box-shadow:0 24px 48px -16px rgba(14,16,32,.35);font-size:14px;color:#3B4157;line-height:1.5}
+.info p{margin-top:8px}
+.info ul{margin-top:10px;display:flex;flex-direction:column;gap:8px;list-style:none;padding:0}
+.info li{display:grid;grid-template-columns:38px 1fr;gap:6px}
+.info li span{font-weight:700;color:var(--v);font-size:13px}
+.legend{margin-top:10px;font-size:14px;color:var(--muted)}
