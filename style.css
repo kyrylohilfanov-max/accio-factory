@@ -73,19 +73,6 @@ img,svg{max-width:100%}
 
 /* 3D scene */
 .scene{position:relative;height:640px;min-width:0;perspective:1400px}
-.belt{position:absolute;left:-40px;bottom:30px;width:760px;height:230px;transform:rotateX(58deg) rotateZ(-28deg);display:flex;align-items:center;gap:22px;padding:0 30px;border-radius:18px;border:1px solid #3A3D6E;background:repeating-linear-gradient(90deg,#1B1D3A 0 42px,#232650 42px 44px);box-shadow:0 40px 80px -30px rgba(0,0,0,.8)}
-.belt span{flex:0 0 78px;height:120px;border-radius:10px;box-shadow:0 10px 24px rgba(0,0,0,.4)}
-.phone{position:absolute;left:50%;top:40px;width:250px;height:520px;margin-left:-125px;border-radius:42px;background:#0A0B18;border:1px solid rgba(255,255,255,.18);padding:12px;transform:rotateY(-16deg) rotateX(6deg) rotateZ(-3deg);box-shadow:0 60px 90px -30px rgba(0,0,0,.85),0 0 0 6px rgba(255,255,255,.04),inset 0 0 0 1px rgba(255,255,255,.08)}
-.phone__screen{position:relative;width:100%;height:100%;border-radius:32px;overflow:hidden;background:linear-gradient(180deg,#2A1F7A 0%,#6D5DFC 45%,#19C6E6 100%)}
-.phone__notch{position:absolute;left:50%;top:10px;width:86px;height:24px;margin-left:-43px;border-radius:12px;background:#0A0B18}
-.phone__face{position:absolute;left:28px;right:28px;top:150px;height:190px;border-radius:95px 95px 60px 60px;background:radial-gradient(circle at 50% 30%,rgba(255,255,255,.55),rgba(255,255,255,.08) 70%);filter:blur(2px)}
-.phone__sub{position:absolute;left:14px;right:60px;top:300px;padding:8px 12px;border-radius:10px;background:rgba(10,11,24,.7);color:#fff;font-size:12px;font-weight:600;line-height:1.35}
-.phone__icons{position:absolute;right:12px;top:240px;display:flex;flex-direction:column;gap:14px;align-items:center}
-.phone__author{position:absolute;left:14px;right:14px;bottom:54px;display:flex;align-items:center;gap:8px;color:#fff;font-size:11px;font-weight:600}
-.phone__author span{width:26px;height:26px;border-radius:50%;background:var(--o);border:2px solid #fff}
-.phone__bar{position:absolute;left:14px;right:14px;bottom:40px;height:3px;border-radius:2px;background:rgba(255,255,255,.3)}
-.phone__bar span{display:block;width:62%;height:100%;border-radius:2px;background:#fff}
-.phone__home{position:absolute;left:50%;bottom:10px;width:90px;height:4px;margin-left:-45px;border-radius:2px;background:rgba(255,255,255,.7)}
 .glass{position:absolute;background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.9);border-radius:16px;box-shadow:0 20px 50px -20px rgba(14,16,32,.45),0 0 0 1px rgba(14,16,32,.04);color:var(--ink);padding:12px 14px;display:flex;gap:10px;align-items:center;font-size:14px}
 .glass small{display:block;font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.02em}
 .glass b{display:block;font-size:14px;font-weight:700}
@@ -305,7 +292,6 @@ tbody .td--us{background:#F3F2FF;color:var(--ink);font-weight:600}
 
 @media (max-width:720px){
   .scene{height:560px}
-  .belt{left:-120px;width:640px}
   .glass--5,.glass--6{display:none}
   .dash{height:560px}
   .dash__main{right:0}
@@ -368,26 +354,81 @@ tbody .td--us{background:#F3F2FF;color:var(--ink);font-weight:600}
 .info li span{font-weight:700;color:var(--v);font-size:13px}
 .legend{margin-top:10px;font-size:14px;color:var(--muted)}
 
-/* «Проще и выгоднее» — идея с shareem.ru */
 .hero__note{margin-top:14px;font-size:14px;color:rgba(255,255,255,.7)}
-.compare{max-width:640px;margin-left:auto;margin-right:auto;background:#fff;border:1px solid var(--line);border-radius:24px;padding:8px 22px;box-shadow:0 24px 48px -28px rgba(14,16,32,.25)}
-.compare__row{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
-.compare__row:last-child{border-bottom:0}
-.compare__ic{flex:0 0 38px;width:38px;height:38px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:20px}
-.compare__txt{flex:1;min-width:0;display:flex;flex-direction:column}
-.compare__txt b{font-size:16px}
-.compare__txt small{font-size:13px;color:var(--muted)}
-.compare__price{font-weight:700;white-space:nowrap}
-.compare__price--old{color:#C0392B;text-decoration:line-through}
-.compare__price--new{font-size:18px;color:var(--v)}
-.compare__row--total{padding-top:18px}
-.compare__ic--x{background:#FCE9E6;color:#C0392B;font-weight:700}
-.compare__ic--logo{background:var(--grad);color:#fff;font-family:Unbounded,sans-serif;font-weight:800;font-size:16px}
+.cartbar[hidden]{display:none}
+
+/* Первый экран: трёхслойный 3D-стек (идея shareem.ru) */
+.scene{perspective:1700px}
+.hs-stack{position:absolute;left:0;right:0;top:0;height:100%;transform-style:preserve-3d;transform-origin:50% 45%;transform:scale(var(--s,1)) rotateX(var(--rx,7deg)) rotateY(var(--ry,-26deg)) rotateZ(-2deg);transition:transform .25s ease-out}
+.hs-pane{position:absolute;border-radius:28px;padding:18px;color:#fff;background:linear-gradient(160deg,rgba(255,255,255,.16),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.22);box-shadow:0 50px 80px -30px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.25);transform-style:preserve-3d;animation:floaty 7s ease-in-out infinite}
+.hs-pane--back{left:56%;top:40px;width:250px;height:340px;--z:-90px;transform:translateZ(var(--z));animation-delay:-2s;background:linear-gradient(160deg,rgba(25,198,230,.22),rgba(11,12,30,.55))}
+.hs-pane--mid{left:30%;top:120px;width:250px;height:350px;--z:10px;transform:translateZ(var(--z));animation-delay:-4s;background:linear-gradient(160deg,rgba(91,76,245,.32),rgba(11,12,30,.55))}
+.hs-pane--front{left:2%;top:70px;width:236px;height:480px;--z:130px;transform:translateZ(var(--z));padding:10px;border-radius:40px;background:#0A0B18;border-color:rgba(255,255,255,.2)}
+@keyframes floaty{0%,100%{transform:translateZ(var(--z)) translateY(0)}50%{transform:translateZ(var(--z)) translateY(-14px)}}
+.hs-pane__top{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.06em;color:rgba(255,255,255,.7)}
+.hs-pane__top small{font-size:11px}
+.hs-pane__dot{width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c)}
+.hs-pane__dot--g{background:#34D399;box-shadow:0 0 10px #34D399}
+.hs-pane__big{margin-top:10px;display:flex;align-items:baseline;gap:8px}
+.hs-pane__big b{font-family:Unbounded,sans-serif;font-size:30px;font-weight:700}
+.hs-pane__big em{font-style:normal;font-size:12px;color:#7CE7B0;font-weight:700}
+.hs-pane__chart{display:block;margin-top:8px}
+.hs-lead-row{display:flex;align-items:center;gap:10px;margin-top:12px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.08)}
+.hs-lead-row i{flex:0 0 28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:700;font-size:13px}
+.hs-lead-row span{display:flex;flex-direction:column;min-width:0}
+.hs-lead-row b{font-size:12px}
+.hs-lead-row small{font-size:11px;color:rgba(255,255,255,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hs-queue{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:8px}
+.hs-queue li{display:grid;grid-template-columns:22px 1fr auto 10px;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.09);font-size:12px}
+.hs-queue small{font-size:11px;color:rgba(255,255,255,.6)}
+.hs-queue i{width:8px;height:8px;border-radius:50%;background:#34D399;box-shadow:0 0 8px #34D399}
+.hs-q{width:22px;height:22px;border-radius:7px}
+.hs-q--1{background:linear-gradient(135deg,#F472B6,#FF6B35)}.hs-q--2{background:#FF4D4D}.hs-q--3{background:#fff}.hs-q--4{background:#2787F5}.hs-q--5{background:#FFB347}
+.hs-rl{position:relative;width:100%;height:100%;border-radius:30px;overflow:hidden;background:linear-gradient(180deg,#2A1F7A 0%,#6D5DFC 45%,#19C6E6 100%)}
+.hs-rl__notch{position:absolute;left:50%;top:10px;width:80px;height:22px;margin-left:-40px;border-radius:12px;background:#0A0B18}
+.hs-rl__face{position:absolute;left:28px;right:28px;top:120px;height:190px;border-radius:95px 95px 60px 60px;background:radial-gradient(circle at 50% 30%,rgba(255,255,255,.55),rgba(255,255,255,.08) 70%);filter:blur(2px)}
+.hs-rl__sub{position:absolute;left:14px;right:56px;top:300px;padding:8px 12px;border-radius:10px;background:rgba(10,11,24,.7);font-size:12px;font-weight:600;line-height:1.35}
+.hs-rl__side{position:absolute;right:12px;top:230px;display:flex;flex-direction:column;gap:14px}
+.hs-rl__author{position:absolute;left:14px;bottom:44px;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600}
+.hs-rl__author span{width:26px;height:26px;border-radius:50%;background:var(--o);border:2px solid #fff}
+.hs-rl__bar{position:absolute;left:14px;right:14px;bottom:30px;height:3px;border-radius:2px;background:rgba(255,255,255,.3)}
+.hs-rl__bar span{display:block;width:62%;height:100%;background:#fff;border-radius:2px}
+.hs-rl__chips{position:absolute;left:-10px;right:-10px;bottom:-26px;display:flex;justify-content:center;gap:6px}
+.hs-rl__chips span{padding:7px 11px;border-radius:999px;background:#fff;color:var(--ink);font-size:11px;font-weight:700;box-shadow:0 12px 24px -10px rgba(0,0,0,.6)}
+.glass--1{left:0;top:6px}
+.glass--5{left:38%;top:auto;bottom:-6px;right:auto}
+.glass--6{right:0;top:auto;bottom:84px}
+.glass{z-index:5}
+@media (prefers-reduced-motion:reduce){.hs-pane{animation:none}.hs-stack{transition:none}}
 @media (max-width:720px){
+  .scene{height:520px}
+  .hs-stack{--s:.78;--ry:-14deg;--rx:5deg;transform-origin:50% 6%}
+  .hs-pane--front{left:3%}
+  .hs-pane--back{left:44%;width:220px;top:90px}
+  .hs-pane--mid{display:none}
+  .rl__chips{left:0;right:0}
+  .glass--5,.glass--6{display:none}
   .nav a:not(.btn){display:none}
   .hdr__in{padding-top:10px;padding-bottom:10px;flex-wrap:nowrap;gap:10px}
   .logo__sub{display:none}
   .nav .btn{height:40px;padding:0 16px;font-size:14px}
-  .compare{padding:4px 16px}
 }
-.cartbar[hidden]{display:none}
+
+/* «Один завод вместо шести подрядчиков» — горизонтальная лента */
+.sub--dark{color:rgba(255,255,255,.7)}
+#compare h2{color:#fff}
+.cmp{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(190px,1fr);gap:14px;overflow-x:auto;padding:6px 2px 18px;scroll-snap-type:x mandatory;scrollbar-width:thin}
+.cmp__card{scroll-snap-align:start;display:flex;flex-direction:column;gap:6px;padding:20px 18px;border-radius:22px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);min-height:190px}
+.cmp__ic{width:46px;height:46px;border-radius:14px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:6px}
+.cmp__card b{font-size:16px;line-height:1.25}
+.cmp__card small{font-size:13px;color:rgba(255,255,255,.6)}
+.cmp__price{margin-top:auto;font-weight:700;color:#FFB347}
+.cmp__card--total{background:var(--grad);border-color:transparent;box-shadow:0 24px 48px -20px rgba(91,76,245,.8);grid-column:auto}
+.cmp__logo{width:46px;height:46px;border-radius:14px;background:#fff;color:var(--v);font-family:Unbounded,sans-serif;font-weight:800;font-size:20px;display:flex;align-items:center;justify-content:center;margin-bottom:6px}
+.cmp__card--total s{color:rgba(255,255,255,.7)}
+.cmp__new{margin-top:auto;font-family:Unbounded,sans-serif;font-size:18px;font-weight:700}
+@media (min-width:1100px){
+  .cmp{grid-auto-columns:minmax(0,1fr);overflow:visible}
+  .cmp__card{padding:16px 14px}
+  .cmp__card b{font-size:15px}
+}

@@ -181,14 +181,14 @@
   function renderCompare() {
     var el = $('#compare-card'); if (!el) return;
     var sum = 0, all = true;
-    var rows = COMPARE.map(function (r, i) {
+    var cards = COMPARE.map(function (r, i) {
       var p = Number(CONFIG.compare[i]) || 0;
       if (p > 0) sum += p; else all = false;
-      return '<div class="compare__row"><span class="compare__ic" aria-hidden="true">' + r.ic + '</span><span class="compare__txt"><b>' + esc(r.title) + '</b><small>' + esc(r.instead) + '</small></span>' + (p > 0 ? '<span class="compare__price">' + num(p) + ' ₽</span>' : '') + '</div>';
+      return '<div class="cmp__card"><span class="cmp__ic" aria-hidden="true">' + r.ic + '</span><b>' + esc(r.title) + '</b><small>' + esc(r.instead) + '</small>' + (p > 0 ? '<span class="cmp__price">' + num(p) + ' ₽/мес</span>' : '') + '</div>';
     }).join('');
-    var sumRow = all ? '<div class="compare__row compare__row--sum"><span class="compare__ic compare__ic--x" aria-hidden="true">×</span><span class="compare__txt"><small>Если нанимать каждого отдельно</small></span><span class="compare__price compare__price--old">' + num(sum) + ' ₽/мес</span></div>' : '';
     var mine = CONFIG.mgmtFee > 0 ? 'от ' + num(CONFIG.mgmtFee) + ' ₽/мес' : 'цена — по брифу';
-    el.innerHTML = rows + sumRow + '<div class="compare__row compare__row--total"><span class="compare__ic compare__ic--logo" aria-hidden="true">A</span><span class="compare__txt"><b>Всё в контент-заводе Accio ✨</b></span><span class="compare__price compare__price--new">' + mine + '</span></div>';
+    var old = all ? '<s>' + num(sum) + ' ₽/мес</s>' : '';
+    el.innerHTML = cards + '<div class="cmp__card cmp__card--total"><span class="cmp__logo" aria-hidden="true">A</span><b>Всё в контент-заводе Accio ✨</b>' + old + '<span class="cmp__new">' + mine + '</span></div>';
   }
 
   /* ---------- calculator ---------- */
@@ -350,6 +350,23 @@
   $('#lead-form').addEventListener('change', updateTgLink);
   $('#lead-form').addEventListener('input', updateTgLink);
   $('#lead-form').addEventListener('submit', function (e) { e.preventDefault(); });
+
+  /* параллакс 3D-стека на первом экране */
+  (function () {
+    var hero = $('#top'), stack = $('#hstack');
+    if (!hero || !stack || window.matchMedia('(prefers-reduced-motion: reduce)').matches || window.matchMedia('(pointer: coarse)').matches) return;
+    var raf = 0;
+    hero.addEventListener('pointermove', function (e) {
+      var r = hero.getBoundingClientRect();
+      var dx = (e.clientX - r.left) / r.width - .5, dy = (e.clientY - r.top) / r.height - .5;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(function () {
+        stack.style.setProperty('--ry', (-26 + dx * 14) + 'deg');
+        stack.style.setProperty('--rx', (7 - dy * 10) + 'deg');
+      });
+    });
+    hero.addEventListener('pointerleave', function () { stack.style.removeProperty('--ry'); stack.style.removeProperty('--rx'); });
+  })();
 
   renderPipeline();
   renderAll();
