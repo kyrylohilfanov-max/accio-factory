@@ -12,8 +12,20 @@
     ratingUrl: '',             // ссылка на систему баллов/оценок исполнителей (пусто = без ссылки)
     // Цены по уровням, ₽/мес: { ugc: { s: 0, m: 0, l: 0 }, ... }. 0 = «Цена — по брифу».
     // Сумма в корзине появится, когда у всех выбранных услуг с уровнями цены заполнены.
-    tierPrices: {}
+    tierPrices: {},
+    // Сколько стоит «вместо» (₽/мес). Пока 0 — суммы скрыты. Когда у ВСЕХ строк цена > 0,
+    // покажется зачёркнутая сумма; «от N ₽/мес» у завода — по mgmtFee.
+    compare: [0, 0, 0, 0, 0, 0]
   };
+
+  var COMPARE = [
+    { ic: '🎬', title: 'UGC-креаторы и инфлюенсеры', instead: 'вместо агентства или биржи блогеров' },
+    { ic: '✂️', title: 'Монтаж, субтитры, уникализация', instead: 'вместо монтажёра и ручной рутины' },
+    { ic: '✍️', title: 'Сценарии и контент-план', instead: 'вместо сценариста и копирайтера' },
+    { ic: '📣', title: 'Публикации, Threads, комментарии', instead: 'вместо SMM-менеджера' },
+    { ic: '🤖', title: 'Боты-воронки и AI-менеджер', instead: 'вместо разработчика ботов' },
+    { ic: '📊', title: 'UTM, отчёты и A/B-тесты', instead: 'вместо отдельного аналитика' }
+  ];
 
   /* Услуги «ручной» работы: клиент выбирает уровень цены (эконом / стандарт / премиум) */
   var TIER_LABELS = { s: 'Эконом', m: 'Стандарт', l: 'Премиум' };
@@ -138,7 +150,7 @@
     var d = TIER_INFO[it.id];
     return '<div class="info" role="note"><b>Как мы подбираем ' + esc(d.pick) + '</b>' +
       '<p>Отбираем по охвату и числу подписчиков, занятости и срокам, качеству прошлых работ и оценке заказчиков. Это наша забота — вам нужно только выбрать уровень.</p>' +
-      '<ul><li><span>₽</span><div><b>Эконом.</b> ' + esc(d.s) + '</div></li><li><span>₽₽</span><div><b>Стандарт.</b> ' + esc(d.m) + '</div></li><li><span>₽₽₽</span><div><b>Премиум.</b> ' + esc(d.l) + '</div></li></ul>' +
+      '<ul><li><span>S</span><div><b>Эконом.</b> ' + esc(d.s) + '</div></li><li><span>M</span><div><b>Стандарт.</b> ' + esc(d.m) + '</div></li><li><span>L</span><div><b>Премиум.</b> ' + esc(d.l) + '</div></li></ul>' +
       '<p>Исполнителей оценивают по баллам, поэтому мы предлагаем проверенных' + (CONFIG.ratingUrl ? ' · <a href="' + esc(CONFIG.ratingUrl) + '" target="_blank" rel="noopener">как устроены оценки</a>' : '') + '. Заказ берём в работу в ближайшее время.</p></div>';
   }
 
@@ -157,12 +169,26 @@
           var cur = state.tier[it.id];
           var bar = '<div class="tierbar" role="group" aria-label="Уровень цены: ' + esc(it.title) + '">' +
             ['s', 'm', 'l'].map(function (k, i) {
-              return '<button type="button" class="tier" data-tier="' + it.id + ':' + k + '" aria-pressed="' + (cur === k) + '" aria-label="' + TIER_LABELS[k] + '" title="' + TIER_LABELS[k] + '">' + new Array(i + 2).join('₽') + '</button>';
+              return '<button type="button" class="tier" data-tier="' + it.id + ':' + k + '" aria-pressed="' + (cur === k) + '" aria-label="' + TIER_LABELS[k] + '" title="' + TIER_LABELS[k] + '">' + k.toUpperCase() + '</button>';
             }).join('') +
             '<button type="button" class="tier tier--i" data-info="' + it.id + '" aria-expanded="' + (state.openInfo === it.id) + '" aria-label="Как мы подбираем исполнителей" title="Как мы подбираем">i</button></div>';
           return '<div class="modwrap modwrap--tier' + (state.openInfo === it.id ? ' is-open' : '') + '">' + btn + bar + (state.openInfo === it.id ? infoPanel(it) : '') + '</div>';
         }).join('') + '</div></div>';
     }).join('');
+  }
+
+  /* ---------- compare ---------- */
+  function renderCompare() {
+    var el = $('#compare-card'); if (!el) return;
+    var sum = 0, all = true;
+    var rows = COMPARE.map(function (r, i) {
+      var p = Number(CONFIG.compare[i]) || 0;
+      if (p > 0) sum += p; else all = false;
+      return '<div class="compare__row"><span class="compare__ic" aria-hidden="true">' + r.ic + '</span><span class="compare__txt"><b>' + esc(r.title) + '</b><small>' + esc(r.instead) + '</small></span>' + (p > 0 ? '<span class="compare__price">' + num(p) + ' ₽</span>' : '') + '</div>';
+    }).join('');
+    var sumRow = all ? '<div class="compare__row compare__row--sum"><span class="compare__ic compare__ic--x" aria-hidden="true">×</span><span class="compare__txt"><small>Если нанимать каждого отдельно</small></span><span class="compare__price compare__price--old">' + num(sum) + ' ₽/мес</span></div>' : '';
+    var mine = CONFIG.mgmtFee > 0 ? 'от ' + num(CONFIG.mgmtFee) + ' ₽/мес' : 'цена — по брифу';
+    el.innerHTML = rows + sumRow + '<div class="compare__row compare__row--total"><span class="compare__ic compare__ic--logo" aria-hidden="true">A</span><span class="compare__txt"><b>Всё в контент-заводе Accio ✨</b></span><span class="compare__price compare__price--new">' + mine + '</span></div>';
   }
 
   /* ---------- calculator ---------- */
@@ -274,7 +300,7 @@
     $('#tg-send').href = 'https://t.me/' + CONFIG.telegramUser + '?text=' + encodeURIComponent(composeLead());
   }
 
-  function renderAll() { renderPopular(); renderBuilder(); renderCalc(); renderTariffs(); renderCart(); }
+  function renderAll() { renderCompare(); renderPopular(); renderBuilder(); renderCalc(); renderTariffs(); renderCart(); }
 
   /* ---------- events ---------- */
   document.addEventListener('click', function (e) {
