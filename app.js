@@ -12,20 +12,8 @@
     ratingUrl: '',             // ссылка на систему баллов/оценок исполнителей (пусто = без ссылки)
     // Цены по уровням, ₽/мес: { ugc: { s: 0, m: 0, l: 0 }, ... }. 0 = «Цена — по брифу».
     // Сумма в корзине появится, когда у всех выбранных услуг с уровнями цены заполнены.
-    tierPrices: {},
-    // Сколько стоит «вместо» (₽/мес). Пока 0 — суммы скрыты. Когда у ВСЕХ строк цена > 0,
-    // покажется зачёркнутая сумма; «от N ₽/мес» у завода — по mgmtFee.
-    compare: [0, 0, 0, 0, 0, 0]
+    tierPrices: {}
   };
-
-  var COMPARE = [
-    { ic: '🎬', title: 'UGC-креаторы и инфлюенсеры', instead: 'вместо агентства или биржи блогеров' },
-    { ic: '✂️', title: 'Монтаж, субтитры, уникализация', instead: 'вместо монтажёра и ручной рутины' },
-    { ic: '✍️', title: 'Сценарии и контент-план', instead: 'вместо сценариста и копирайтера' },
-    { ic: '📣', title: 'Публикации, Threads, комментарии', instead: 'вместо SMM-менеджера' },
-    { ic: '🤖', title: 'Боты-воронки и AI-менеджер', instead: 'вместо разработчика ботов' },
-    { ic: '📊', title: 'UTM, отчёты и A/B-тесты', instead: 'вместо отдельного аналитика' }
-  ];
 
   /* Услуги «ручной» работы: клиент выбирает уровень цены (эконом / стандарт / премиум) */
   var TIER_LABELS = { s: 'Эконом', m: 'Стандарт', l: 'Премиум' };
@@ -177,20 +165,6 @@
     }).join('');
   }
 
-  /* ---------- compare ---------- */
-  function renderCompare() {
-    var el = $('#compare-card'); if (!el) return;
-    var sum = 0, all = true;
-    var cards = COMPARE.map(function (r, i) {
-      var p = Number(CONFIG.compare[i]) || 0;
-      if (p > 0) sum += p; else all = false;
-      return '<div class="cmp__card"><span class="cmp__ic" aria-hidden="true">' + r.ic + '</span><b>' + esc(r.title) + '</b><small>' + esc(r.instead) + '</small>' + (p > 0 ? '<span class="cmp__price">' + num(p) + ' ₽/мес</span>' : '') + '</div>';
-    }).join('');
-    var mine = CONFIG.mgmtFee > 0 ? 'от ' + num(CONFIG.mgmtFee) + ' ₽/мес' : 'цена — по брифу';
-    var old = all ? '<s>' + num(sum) + ' ₽/мес</s>' : '';
-    el.innerHTML = cards + '<div class="cmp__card cmp__card--total"><span class="cmp__logo" aria-hidden="true">A</span><b>Всё в контент-заводе Accio ✨</b>' + old + '<span class="cmp__new">' + mine + '</span></div>';
-  }
-
   /* ---------- calculator ---------- */
   function seg(el, vals, cur, key, fmt) {
     el.innerHTML = vals.map(function (v) {
@@ -300,7 +274,7 @@
     $('#tg-send').href = 'https://t.me/' + CONFIG.telegramUser + '?text=' + encodeURIComponent(composeLead());
   }
 
-  function renderAll() { renderCompare(); renderPopular(); renderBuilder(); renderCalc(); renderTariffs(); renderCart(); }
+  function renderAll() { renderPopular(); renderBuilder(); renderCalc(); renderTariffs(); renderCart(); }
 
   /* ---------- events ---------- */
   document.addEventListener('click', function (e) {
@@ -350,23 +324,6 @@
   $('#lead-form').addEventListener('change', updateTgLink);
   $('#lead-form').addEventListener('input', updateTgLink);
   $('#lead-form').addEventListener('submit', function (e) { e.preventDefault(); });
-
-  /* параллакс 3D-стека на первом экране */
-  (function () {
-    var hero = $('#top'), stack = $('#hstack');
-    if (!hero || !stack || window.matchMedia('(prefers-reduced-motion: reduce)').matches || window.matchMedia('(pointer: coarse)').matches) return;
-    var raf = 0;
-    hero.addEventListener('pointermove', function (e) {
-      var r = hero.getBoundingClientRect();
-      var dx = (e.clientX - r.left) / r.width - .5, dy = (e.clientY - r.top) / r.height - .5;
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(function () {
-        stack.style.setProperty('--ry', (-26 + dx * 14) + 'deg');
-        stack.style.setProperty('--rx', (7 - dy * 10) + 'deg');
-      });
-    });
-    hero.addEventListener('pointerleave', function () { stack.style.removeProperty('--ry'); stack.style.removeProperty('--rx'); });
-  })();
 
   renderPipeline();
   renderAll();
