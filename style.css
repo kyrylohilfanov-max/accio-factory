@@ -439,6 +439,8 @@ tbody .td--us{background:#F3F2FF;color:var(--ink);font-weight:600}
 .scene .glass--3{top:424px}
 .scene .glass--4{top:498px}
 
+@media (max-width:720px){.scene .glass--1{top:4px}.scene .glass--2{top:72px}.scene .glass--3{top:330px}.scene .glass--4{top:450px}.phone__screen--photo .phone__sub{display:none}}
+
 /* глянец на фирменных элементах */
 .btn--grad{box-shadow:0 16px 40px -12px rgba(91,76,245,.7),inset 0 1.5px 0 rgba(255,255,255,.45),inset 0 -3px 8px rgba(20,30,140,.25);transition:transform .18s,box-shadow .18s}
 .btn--grad:hover{transform:translateY(-2px);box-shadow:0 22px 44px -12px rgba(91,76,245,.8),inset 0 1.5px 0 rgba(255,255,255,.5),inset 0 -3px 8px rgba(20,30,140,.25)}
