@@ -328,3 +328,21 @@
   renderPipeline();
   renderAll();
 })();
+
+/* 3D-параллакс блока «Ваш бренд» */
+(function () {
+  var box = document.getElementById('podium');
+  var scene = document.getElementById('pdScene');
+  if (!box || !scene || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+  box.addEventListener('pointermove', function (e) {
+    var r = box.getBoundingClientRect();
+    var x = (e.clientX - r.left) / r.width - 0.5;
+    var y = (e.clientY - r.top) / r.height - 0.5;
+    scene.style.setProperty('--ry', (x * 12).toFixed(2) + 'deg');
+    scene.style.setProperty('--rx', (-y * 8).toFixed(2) + 'deg');
+  });
+  box.addEventListener('pointerleave', function () {
+    scene.style.setProperty('--ry', '0deg');
+    scene.style.setProperty('--rx', '0deg');
+  });
+})();
