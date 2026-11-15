@@ -431,6 +431,14 @@ tbody .td--us{background:#F3F2FF;color:var(--ink);font-weight:600}
 .phone__screen--photo .phone__face{display:none}
 .phone__screen--photo .phone__sub{top:auto;bottom:96px;background:rgba(10,11,24,.78);backdrop-filter:blur(4px)}
 
+/* стикеры не закрывают лицо на экране телефона */
+.scene .glass--1{top:14px}
+.scene .glass--2{top:58px}
+.scene .glass--5{top:306px}
+.scene .glass--6{top:336px}
+.scene .glass--3{top:424px}
+.scene .glass--4{top:498px}
+
 /* глянец на фирменных элементах */
 .btn--grad{box-shadow:0 16px 40px -12px rgba(91,76,245,.7),inset 0 1.5px 0 rgba(255,255,255,.45),inset 0 -3px 8px rgba(20,30,140,.25);transition:transform .18s,box-shadow .18s}
 .btn--grad:hover{transform:translateY(-2px);box-shadow:0 22px 44px -12px rgba(91,76,245,.8),inset 0 1.5px 0 rgba(255,255,255,.5),inset 0 -3px 8px rgba(20,30,140,.25)}
