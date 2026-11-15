@@ -11,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Onest:wght@400;500;600;700&family=Caveat:wght@600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=3">
 </head>
 <body>
 
@@ -50,7 +50,7 @@
 </div>
 
 <div class="scene" aria-hidden="true">
-<div class="belt">
+<div class="belt"><div class="belt__track">
 <span style="background:linear-gradient(160deg,#6D5DFC,#19C6E6)"></span>
 <span style="background:linear-gradient(160deg,#FF6B35,#FFB347)"></span>
 <span style="background:linear-gradient(160deg,#19C6E6,#34D399)"></span>
@@ -58,9 +58,16 @@
 <span style="background:linear-gradient(160deg,#6D5DFC,#19C6E6)"></span>
 <span style="background:linear-gradient(160deg,#FFB347,#F472B6)"></span>
 <span style="background:linear-gradient(160deg,#34D399,#19C6E6)"></span>
-</div>
+<span style="background:linear-gradient(160deg,#6D5DFC,#19C6E6)"></span>
+<span style="background:linear-gradient(160deg,#FF6B35,#FFB347)"></span>
+<span style="background:linear-gradient(160deg,#19C6E6,#34D399)"></span>
+<span style="background:linear-gradient(160deg,#F472B6,#6D5DFC)"></span>
+<span style="background:linear-gradient(160deg,#6D5DFC,#19C6E6)"></span>
+<span style="background:linear-gradient(160deg,#FFB347,#F472B6)"></span>
+<span style="background:linear-gradient(160deg,#34D399,#19C6E6)"></span>
+</div></div>
 <div class="phone">
-<div class="phone__screen">
+<div class="phone__screen phone__screen--photo" style="--shot:url('https://d8j0ntlcm91z4.cloudfront.net/user_3LubLifHwpoGYBsOjqiTgWiYgWg/hf_20261115_093943_baac63e2-af1c-475c-b37a-ccb2ba057750.png')">
 <div class="phone__notch"></div>
 <div class="phone__face"></div>
 <div class="phone__sub">«Этот сервис сэкономил мне 20 часов в месяц»</div>
@@ -273,14 +280,17 @@
 <div class="podium" id="podium" aria-hidden="true">
 <div class="pd-scene" id="pdScene">
 <div class="pd-glow"></div>
-<div class="pd-disc"><i></i><i></i></div>
+<div class="pd-orbit"></div>
+<div class="pd-disc"><i></i><i></i><i></i></div>
+<div class="pd-shadow"></div>
 <div class="pd-cube"><span>ВАШ<br>БРЕНД</span></div>
-<div class="glass pd-c pd-c1"><b>Аккаунты</b><small>и сетка под вашим контролем</small></div>
-<div class="glass pd-c pd-c2"><b>Ролики и права</b><small>весь архив — ваш</small></div>
-<div class="glass pd-c pd-c3"><b>База знаний</b><small>сценарии, матрица, инструкции</small></div>
-<div class="glass pd-c pd-c4"><b>Креаторы и боты</b><small>договоры напрямую с вами</small></div>
-<div class="glass pd-c pd-c5"><b>Доступы</b><small>ключи от сервисов — у вас</small></div>
-<div class="glass pd-c pd-c6"><b>Отчёты</b><small>статистика и аналитика</small></div>
+<i class="pd-ball pd-ball--1"></i><i class="pd-ball pd-ball--2"></i><i class="pd-ball pd-ball--3"></i>
+<div class="glass pd-c pd-c1"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg></span><span><b>Аккаунты</b><small>и сетка под вашим контролем</small></span></div>
+<div class="glass pd-c pd-c2"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M10 9l5 3-5 3z"/></svg></span><span><b>Ролики и права</b><small>весь архив — ваш</small></span></div>
+<div class="glass pd-c pd-c3"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span><span><b>База знаний</b><small>сценарии, матрица, инструкции</small></span></div>
+<div class="glass pd-c pd-c4"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 8V4"/><circle cx="12" cy="3" r="1"/><path d="M9.5 13v1.5M14.5 13v1.5"/></svg></span><span><b>Креаторы и боты</b><small>договоры напрямую с вами</small></span></div>
+<div class="glass pd-c pd-pill pd-c5"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9"/><path d="M16 7l3 3"/></svg></span><b>Доступы</b></div>
+<div class="glass pd-c pd-pill pd-c6"><span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></svg></span><b>Отчёты</b></div>
 </div>
 </div>
 <div>
@@ -378,6 +388,6 @@
 </div>
 </footer>
 
-<script src="app.js"></script>
+<script src="app.js?v=3"></script>
 </body>
 </html>

@@ -329,20 +329,66 @@
   renderAll();
 })();
 
-/* 3D-параллакс блока «Ваш бренд» */
+/* Глубина: параллакс сцен, наклон карточек за курсором, появление при прокрутке */
 (function () {
-  var box = document.getElementById('podium');
-  var scene = document.getElementById('pdScene');
-  if (!box || !scene || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
-  box.addEventListener('pointermove', function (e) {
-    var r = box.getBoundingClientRect();
-    var x = (e.clientX - r.left) / r.width - 0.5;
-    var y = (e.clientY - r.top) / r.height - 0.5;
-    scene.style.setProperty('--ry', (x * 12).toFixed(2) + 'deg');
-    scene.style.setProperty('--rx', (-y * 8).toFixed(2) + 'deg');
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  function parallax(area, target) {
+    if (!area || !target) return;
+    area.addEventListener('pointermove', function (e) {
+      if (e.pointerType && e.pointerType !== 'mouse') return;
+      var r = area.getBoundingClientRect();
+      target.style.setProperty('--mx', ((e.clientX - r.left) / r.width - 0.5).toFixed(3));
+      target.style.setProperty('--my', ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
+    });
+    area.addEventListener('pointerleave', function () {
+      target.style.setProperty('--mx', '0');
+      target.style.setProperty('--my', '0');
+    });
+  }
+  parallax(document.getElementById('top'), document.querySelector('.scene'));
+  parallax(document.getElementById('podium'), document.getElementById('pdScene'));
+
+  var TILT = '.pop,.card--why,.card--team,.card--add,.card--sm,.pipe,.tariff';
+  var tilted = null;
+  function untilt() {
+    if (!tilted) return;
+    tilted.style.removeProperty('--tx');
+    tilted.style.removeProperty('--ty');
+    tilted = null;
+  }
+  document.addEventListener('pointermove', function (e) {
+    if (e.pointerType && e.pointerType !== 'mouse') return;
+    var el = e.target && e.target.closest ? e.target.closest(TILT) : null;
+    if (el !== tilted) untilt();
+    if (!el) return;
+    tilted = el;
+    var r = el.getBoundingClientRect();
+    el.style.setProperty('--tx', ((e.clientX - r.left) / r.width - 0.5).toFixed(3));
+    el.style.setProperty('--ty', ((e.clientY - r.top) / r.height - 0.5).toFixed(3));
   });
-  box.addEventListener('pointerleave', function () {
-    scene.style.setProperty('--ry', '0deg');
-    scene.style.setProperty('--rx', '0deg');
+  document.documentElement.addEventListener('pointerleave', untilt);
+
+  if (!('IntersectionObserver' in window)) return;
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (en) {
+      if (!en.isIntersecting) return;
+      var el = en.target;
+      io.unobserve(el);
+      el.classList.add('rv--in');
+      setTimeout(function () {
+        el.classList.remove('rv', 'rv--in');
+        el.style.transitionDelay = '';
+      }, 1200);
+    });
+  }, { rootMargin: '0px 0px -6% 0px', threshold: 0.06 });
+  var seen = new Map();
+  document.querySelectorAll('section:not(.hero) h2, section:not(.hero) .sub, section:not(.hero) .card, .tariff, .podium, .calc__out').forEach(function (el) {
+    if (el.closest('.mod')) return;
+    var n = seen.get(el.parentNode) || 0;
+    seen.set(el.parentNode, n + 1);
+    el.style.transitionDelay = Math.min(n, 5) * 70 + 'ms';
+    el.classList.add('rv');
+    io.observe(el);
   });
 })();
